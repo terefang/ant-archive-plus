@@ -22,3 +22,24 @@ Enhances the Ant-Compress.
     <symlink name="/path/in/archive" target="/target/of/symlink" user="root" group="root" permissions="555"/>
 </xtar>
 ```
+
+#### ipkg Task
+
+##### Declaration
+
+```xml
+<typedef resource="antarchiveplus/antlib.xml" />
+```
+
+##### Usage
+
+```xml
+<ipkg destfile=".../test.ipkg">
+    <ipkg-control packageName="artifactId" version="${version}" architecture="x86_64"/>
+    <tarfileset prefix="/path/to/prefix/" dir="${basedir}/src/main/dist/xbin/" >
+        <include name="bin-file" />
+    </tarfileset>
+    <tarfileset fullpath="/path/to/prefix/some-cmd" file="${.basedir}/some-cmd-other-name" />
+</ipkg>
+```
+
