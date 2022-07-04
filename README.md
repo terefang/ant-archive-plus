@@ -17,13 +17,15 @@ Enhances the Ant-Compress.
 ##### Usage
 
 ```xml
-<xtar destfile=".../archive.tar.gz" compression="gzip">
+<xtar destfile=".../archive.tar...." compression="gzip|bzip2|xz|zstd">
     <tarfileset fullpath="/path/in/archive" file="/path/to/real/file" filemode="555"/>
     <symlink name="/path/in/archive" target="/target/of/symlink" user="root" group="root" permissions="555"/>
 </xtar>
 ```
 
 #### ipkg Task
+
+creates ipkg/opkg package files.
 
 ##### Declaration
 
@@ -35,7 +37,11 @@ Enhances the Ant-Compress.
 
 ```xml
 <ipkg destfile=".../test.ipkg">
-    <ipkg-control packageName="artifactId" version="${version}" architecture="x86_64"/>
+    <ipkg-control packageName="${artifactId}" version="${version}" architecture="x86_64"/>
+    <ipkg-preinstall file="..." />
+    <ipkg-postinstall file="..." />
+    <ipkg-preremove file="..." />
+    <ipkg-postremove file="..." />
     <tarfileset prefix="/path/to/prefix/" dir="${basedir}/src/main/dist/xbin/" >
         <include name="bin-file" />
     </tarfileset>
