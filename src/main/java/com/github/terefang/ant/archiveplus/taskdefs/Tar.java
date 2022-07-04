@@ -1,5 +1,7 @@
 package com.github.terefang.ant.archiveplus.taskdefs;
 
+import com.github.terefang.ant.archiveplus.CompressionEnum;
+import com.github.terefang.ant.archiveplus.resources.EmptyDirectory;
 import com.github.terefang.ant.archiveplus.resources.SymbolicLink;
 import org.apache.ant.compress.resources.TarFileSet;
 import org.apache.ant.compress.taskdefs.ArchiveBase;
@@ -12,16 +14,16 @@ import org.apache.commons.compress.archivers.tar.TarConstants;
 import org.apache.tools.ant.types.ArchiveFileSet;
 import org.apache.tools.ant.types.EnumeratedAttribute;
 import org.apache.tools.ant.types.Resource;
+import org.apache.tools.ant.types.ResourceCollection;
 
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Collection;
-import java.util.zip.GZIPOutputStream;
 
 public class Tar extends ArchiveBase {
 
     private Format format = Format.PAX;
-    private String compression = "none";
+    CompressionEnum compression;
 
     public Tar()
     {
@@ -33,15 +35,13 @@ public class Tar extends ArchiveBase {
                     throws IOException {
                 TarArchiveOutputStream o = null;
 
-                if("gzip".equalsIgnoreCase(Tar.this.compression))
+                if(Tar.this.compression!=null)
                 {
-                    o = (TarArchiveOutputStream) super.getArchiveStream(new GZIPOutputStream(stream),
-                            encoding);
+                    o = (TarArchiveOutputStream) super.getArchiveStream(CompressionEnum.createStream(Tar.this.compression, stream), encoding);
                 }
                 else
                 {
-                    o = (TarArchiveOutputStream) super.getArchiveStream(stream,
-                            encoding);
+                    o = (TarArchiveOutputStream) super.getArchiveStream(stream, encoding);
                 }
                 if (format.equals(Format.OLDGNU)) {
                     o.setLongFileMode(TarArchiveOutputStream.LONGFILE_GNU);
@@ -92,8 +92,18 @@ public class Tar extends ArchiveBase {
                             return ent;
                         }
 
+                        if(r.getResource() instanceof EmptyDirectory)
+                        {
+                            EmptyDirectory _edir = (EmptyDirectory)r.getResource();
+                            TarArchiveEntry _ent = new TarArchiveEntry(_edir.getName(), TarConstants.LF_DIR, false);
+                            _ent.setGroupName(_edir.getGroup()==null ? "nobody" : _edir.getGroup());
+                            _ent.setUserName(_edir.getUser()==null ? "nobody" : _edir.getUser());
+                            _ent.setMode(Integer.parseInt(_edir.getDirmode()==null ? "400" : _edir.getDirmode(), 8));
+                            return _ent;
+                        }
+
                         TarArchiveEntry ent =
-                                new TarArchiveEntry(name, getPreserveLeadingSlashes());
+                            new TarArchiveEntry(name, getPreserveLeadingSlashes());
 
                         ent.setModTime(round(r.getResource().getLastModified(),
                                 1000));
@@ -154,6 +164,13 @@ public class Tar extends ArchiveBase {
         return false;
     }
 
+    @Override
+    public void add(ResourceCollection c)
+    {
+        // TODO if resource is
+        super.add(c);
+    }
+
     /**
      * The format to use.
      */
@@ -161,11 +178,11 @@ public class Tar extends ArchiveBase {
         format = f;
     }
 
-    public String getCompression() {
+    public CompressionEnum getCompression() {
         return compression;
     }
 
-    public void setCompression(String compression) {
+    public void setCompression(CompressionEnum compression) {
         this.compression = compression;
     }
 
